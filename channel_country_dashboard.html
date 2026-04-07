@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OTC Desk — Channel & Country Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #ffffff; --bg2: #f5f4f0; --bg3: #eeece7;
+    --text: #1a1a18; --text2: #5a5a56; --text3: #9a9890;
+    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.18);
+    --radius: 10px; --radius-sm: 6px;
+    --green-bg: #EAF3DE; --green-text: #3B6D11;
+    --blue-bg: #E6F1FB; --blue-text: #185FA5;
+    --amber-bg: #FAEEDA; --amber-text: #854F0B;
+    --red-bg: #FCEBEB; --red-text: #A32D2D;
+    --purple-bg: #EEEDFE; --purple-text: #3C3489;
+    --dark-bg: #2C2C2A; --dark-text: #D3D1C7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1c1c1a; --bg2: #252523; --bg3: #2e2e2b;
+      --text: #e8e6df; --text2: #a8a69e; --text3: #6e6c66;
+      --border: rgba(255,255,255,0.08); --border2: rgba(255,255,255,0.15);
+    }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg3); color: var(--text); min-height: 100vh; }
+
+  /* NAV */
+  nav { background: var(--bg); border-bottom: 0.5px solid var(--border2); padding: 0 1.5rem; display: flex; align-items: center; gap: 0; position: sticky; top: 0; z-index: 100; }
+  .nav-brand { font-size: 14px; font-weight: 600; color: var(--text); padding: 1rem 1.5rem 1rem 0; border-right: 0.5px solid var(--border); margin-right: 1rem; white-space: nowrap; }
+  .nav-tab { font-size: 13px; padding: 1.1rem 1rem; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; white-space: nowrap; background: none; border-top: none; border-left: none; border-right: none; }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+  .nav-badge { font-size: 10px; background: var(--bg2); color: var(--text3); padding: 1px 6px; border-radius: 10px; margin-left: 5px; }
+
+  /* PAGES */
+  .page { display: none; padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* CARDS */
+  .card { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+  .card-header { padding: 12px 16px; border-bottom: 0.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .card-title { font-size: 14px; font-weight: 500; }
+  .card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* BADGES */
+  .badge { font-size: 10px; font-weight: 500; padding: 2px 8px; border-radius: 4px; white-space: nowrap; display: inline-block; }
+  .go { background: var(--green-bg); color: var(--green-text); }
+  .nogo { background: var(--red-bg); color: var(--red-text); }
+  .cond { background: var(--amber-bg); color: var(--amber-text); }
+  .pend { background: var(--blue-bg); color: var(--blue-text); }
+  .soon { background: var(--purple-bg); color: var(--purple-text); }
+
+  /* CHANNEL ROWS */
+  .ch-row { padding: 10px 16px; border-bottom: 0.5px solid var(--border); display: grid; grid-template-columns: 1fr auto; gap: 8px; cursor: pointer; transition: background .12s; }
+  .ch-row:last-child { border-bottom: none; }
+  .ch-row:hover { background: var(--bg2); }
+  .ch-name { font-size: 13px; font-weight: 500; }
+  .ch-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .ch-curr { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* DETAIL PANEL */
+  .detail { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 1rem; display: none; }
+  .detail.open { display: block; }
+  .detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .detail-title { font-size: 14px; font-weight: 500; }
+  .close-btn { font-size: 11px; color: var(--text3); cursor: pointer; padding: 3px 8px; border-radius: 6px; border: 0.5px solid var(--border2); background: var(--bg); }
+  .close-btn:hover { background: var(--bg2); }
+  .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .metric { background: var(--bg); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .metric-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 3px; }
+  .metric-val { font-size: 13px; font-weight: 500; }
+  .divider { font-size: 10px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; border-top: 0.5px solid var(--border); padding-top: 10px; margin: 10px 0 8px; }
+  .finding { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 7px; font-size: 12px; color: var(--text2); }
+  .fdot { width: 6px; height: 6px; border-radius: 50%; margin-top: 4px; flex-shrink: 0; }
+  .dok { background: #639922; } .dwarn { background: #BA7517; } .dbad { background: #E24B4A; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .tag { font-size: 11px; padding: 2px 9px; border-radius: 12px; border: 0.5px solid var(--border2); color: var(--text2); background: var(--bg); }
+  .alert-box { border-radius: var(--radius-sm); padding: 9px 12px; margin-bottom: 12px; font-size: 12px; }
+  .alert-red { background: var(--red-bg); color: var(--red-text); border: 0.5px solid #F7C1C1; }
+  .alert-amber { background: var(--amber-bg); color: var(--amber-text); border: 0.5px solid #FAC775; }
+  .alert-blue { background: var(--blue-bg); color: var(--blue-text); border: 0.5px solid #B5D4F4; }
+  .alert-box b { font-weight: 600; }
+
+  /* CURRENCY TABLE */
+  .curr-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+  .curr-table th { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; padding: 5px 10px; text-align: left; border-bottom: 0.5px solid var(--border); background: var(--bg2); }
+  .curr-table td { padding: 6px 10px; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+  .curr-table tr:last-child td { border-bottom: none; }
+  .curr-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: middle; }
+
+  /* DESK GRID */
+  .desk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 700px) { .desk-grid { grid-template-columns: 1fr; } }
+
+  /* OPEN ITEMS */
+  .oi-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .oi-table th { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .05em; padding: 6px 12px; text-align: left; border-bottom: 0.5px solid var(--border); background: var(--bg2); }
+  .oi-table td { padding: 8px 12px; border-bottom: 0.5px solid var(--border); vertical-align: top; }
+  .oi-table tr:last-child td { border-bottom: none; }
+  .oi-table tr:hover td { background: var(--bg2); }
+  .oi-status { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+  .s-stuck { background: var(--red-bg); color: var(--red-text); }
+  .s-chase { background: var(--amber-bg); color: var(--amber-text); }
+  .s-prog { background: var(--purple-bg); color: var(--purple-text); }
+  .s-tbd { background: var(--bg3); color: var(--text3); }
+
+  /* COUNTRY PAGE */
+  .ctrl-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .ctrl-bar input { font-size: 12px; padding: 5px 12px; border-radius: 8px; border: 0.5px solid var(--border2); background: var(--bg); color: var(--text); outline: none; width: 180px; }
+  .ctrl-bar input:focus { border-color: var(--text3); }
+  .filter-btn { font-size: 11px; padding: 4px 11px; border-radius: 12px; border: 0.5px solid var(--border); background: var(--bg); color: var(--text2); cursor: pointer; transition: all .12s; }
+  .filter-btn.on { background: var(--bg3); color: var(--text); border-color: var(--border2); font-weight: 500; }
+  .count-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .count-chip { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; font-size: 11px; color: var(--text2); }
+  .count-chip b { font-size: 15px; font-weight: 500; color: var(--text); display: block; }
+  .tbl-scroll { overflow-x: auto; border-radius: var(--radius); border: 0.5px solid var(--border); background: var(--bg); }
+  .ctry-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .ctry-tbl th { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; padding: 7px 12px; text-align: left; border-bottom: 0.5px solid var(--border); background: var(--bg2); white-space: nowrap; position: sticky; top: 0; }
+  .ctry-tbl td { padding: 6px 12px; border-bottom: 0.5px solid var(--border); vertical-align: middle; }
+  .ctry-tbl tr:last-child td { border-bottom: none; }
+  .ctry-tbl tr:hover td { background: var(--bg2); }
+  .risk-b { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; display: inline-block; white-space: nowrap; }
+  .rl { background: var(--green-bg); color: var(--green-text); }
+  .rm { background: var(--blue-bg); color: var(--blue-text); }
+  .rmh { background: var(--amber-bg); color: var(--amber-text); }
+  .rh { background: var(--red-bg); color: var(--red-text); }
+  .rp { background: var(--dark-bg); color: var(--dark-text); }
+  .ob-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; vertical-align: middle; }
+  .ob-yes { background: #639922; } .ob-rev { background: #BA7517; } .ob-no { background: #E24B4A; } .ob-proh { background: #3a3a38; }
+  .legend-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+  .leg { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text2); }
+  .no-res { text-align: center; padding: 2rem; color: var(--text3); font-size: 13px; }
+  .section-label { font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">OTC Desk</div>
+  <button class="nav-tab active" onclick="showPage('channels',this)">Channels <span class="nav-badge">2 desks</span></button>
+  <button class="nav-tab" onclick="showPage('country',this)">Country matrix <span class="nav-badge">250+</span></button>
+</nav>
+
+<!-- ═══════════════════════════════ CHANNELS PAGE ═══════════════════════════════ -->
+<div class="page active" id="page-channels">
+
+  <div class="desk-grid">
+
+    <!-- 40 ACRES -->
+    <div>
+      <div class="section-label">40 Acres — Fiat OTC desk</div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">40 Acres</div><div class="card-sub">Banking migration in progress — Lorum & One.io replacing BCB</div></div></div>
+        <div class="ch-row" onclick="tog('bcb')"><div><div class="ch-name">BCB</div><div class="ch-meta">Bank · SEPA / SWIFT</div><div class="ch-curr">EUR · GBP · CAD · USD</div></div><span class="badge nogo">NO-GO</span></div>
+        <div class="ch-row" onclick="tog('tkb')"><div><div class="ch-name">The Kingdom Bank</div><div class="ch-meta">Bank · SWIFT · GBP testing live</div><div class="ch-curr">GBP · EUR · USD</div></div><span class="badge cond">CONDITIONAL</span></div>
+        <div class="ch-row" onclick="tog('aqn40')"><div><div class="ch-name">Aquanow LP</div><div class="ch-meta">LP · Crypto-Fiat · Fiat settlement</div><div class="ch-curr">EUR · GBP · USD — max 1M/currency</div></div><span class="badge go">GO</span></div>
+        <div class="ch-row" onclick="tog('lorum')"><div><div class="ch-name">Lorum</div><div class="ch-meta">Bank · Application in progress</div><div class="ch-curr">TBD</div></div><span class="badge soon">COMING SOON</span></div>
+        <div class="ch-row" onclick="tog('one40')"><div><div class="ch-name">One.io</div><div class="ch-meta">Bank · Application in progress</div><div class="ch-curr">TBD</div></div><span class="badge soon">COMING SOON</span></div>
+      </div>
+    </div>
+
+    <!-- PERPOLIS -->
+    <div>
+      <div class="section-label">Perpolis — Fiat OTC desk</div>
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Perpolis</div><div class="card-sub">Primary banking via One · LP via Aquanow & One</div></div></div>
+        <div class="ch-row" onclick="tog('one')"><div><div class="ch-name">One (Bank)</div><div class="ch-meta">Bank · SEPA / SWIFT / FPS / CHAPS</div><div class="ch-curr">GBP · EUR · USD (invoicing)</div></div><span class="badge go">GO</span></div>
+        <div class="ch-row" onclick="tog('apaylo')"><div><div class="ch-name">Apaylo</div><div class="ch-meta">Bank · Domestic CAD only</div><div class="ch-curr">CAD — Canada clients only</div></div><span class="badge cond">CONDITIONAL</span></div>
+        <div class="ch-row" onclick="tog('oneify')"><div><div class="ch-name">Oneify</div><div class="ch-meta">Bank · No access</div><div class="ch-curr">Unknown</div></div><span class="badge nogo">NO-GO</span></div>
+        <div class="ch-row" onclick="tog('aqnp')"><div><div class="ch-name">Aquanow (LP)</div><div class="ch-meta">LP · Crypto-Fiat · Fiat settlement</div><div class="ch-curr">EUR · GBP · USD · CAD</div></div><span class="badge go">GO</span></div>
+        <div class="ch-row" onclick="tog('onelp')"><div><div class="ch-name">One (LP)</div><div class="ch-meta">LP · Crypto-Fiat · Fiat settlement</div><div class="ch-curr">GBP · EUR · USD</div></div><span class="badge go">GO</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DETAIL PANELS -->
+
+  <div class="detail" id="d-bcb">
+    <div class="detail-head"><span class="detail-title">BCB — 40 Acres</span><button class="close-btn" onclick="tog('bcb')">close</button></div>
+    <div class="alert-box alert-red"><b>No-go:</b> BCB requested KYB renewal. Decision taken not to renew 40 Acres relationship. Migrating to Lorum and One.io.</div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Settlement</div><div class="metric-val">24–48 hrs</div></div>
+      <div class="metric"><div class="metric-label">SEPA instant</div><div class="metric-val">Up to 1M EUR</div></div>
+      <div class="metric"><div class="metric-label">SEPA cutoff</div><div class="metric-val">1pm UK time</div></div>
+    </div>
+    <div class="divider">Currencies supported</div>
+    <table class="curr-table">
+      <tr><th>Currency</th><th>Direction</th><th>Rail</th><th>Limit</th></tr>
+      <tr><td>EUR</td><td>Send & Receive</td><td>SEPA / SWIFT</td><td>Instant SEPA up to 1M; no limit above via regular SEPA</td></tr>
+      <tr><td>GBP</td><td>Send & Receive</td><td>SWIFT</td><td>Standard limits</td></tr>
+      <tr><td>CAD</td><td>Receive</td><td>SWIFT</td><td>Invoice required</td></tr>
+      <tr><td>USD</td><td>Send & Receive</td><td>SWIFT</td><td>Invoice required</td></tr>
+    </table>
+  </div>
+
+  <div class="detail" id="d-tkb">
+    <div class="detail-head"><span class="detail-title">The Kingdom Bank — 40 Acres</span><button class="close-btn" onclick="tog('tkb')">close</button></div>
+    <div class="alert-box alert-amber"><b>Conditional go:</b> GBP channel being tested with clients this week. Full go pending dedicated IBAN (500 EUR). EUR 49k stuck in transit — escalation ongoing.</div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Settlement</div><div class="metric-val">Slow / variable</div></div>
+      <div class="metric"><div class="metric-label">GBP IBAN</div><div class="metric-val">Pending (500 EUR)</div></div>
+      <div class="metric"><div class="metric-label">Docs required</div><div class="metric-val">Invoice per tx</div></div>
+      <div class="metric"><div class="metric-label">CSM</div><div class="metric-val">Damaris (Telegram)</div></div>
+    </div>
+    <div class="divider">Currencies supported</div>
+    <table class="curr-table">
+      <tr><th>Currency</th><th>Direction</th><th>Status</th><th>Limitation</th></tr>
+      <tr><td>GBP</td><td>Send & Receive</td><td><span class="badge cond">Testing now</span></td><td>Needs dedicated IBAN (500 EUR cost)</td></tr>
+      <tr><td>EUR</td><td>Receive only</td><td><span class="badge nogo">Blocked</span></td><td>49k EUR stuck in transit — unresolved</td></tr>
+      <tr><td>USD</td><td>Receive</td><td><span class="badge cond">Conditional</span></td><td>Must alert TKB before receiving USD</td></tr>
+    </table>
+    <div class="divider">Findings</div>
+    <div class="finding"><div class="fdot dok"></div><span>Inbound transfers to TKB confirmed working</span></div>
+    <div class="finding"><div class="fdot dbad"></div><span>Outbound blocked — TKB requires proof before releasing funds</span></div>
+    <div class="finding"><div class="fdot dbad"></div><span>EUR 49,000 stuck in transit TKB → BCB — escalation required</span></div>
+  </div>
+
+  <div class="detail" id="d-aqn40">
+    <div class="detail-head"><span class="detail-title">Aquanow LP — 40 Acres</span><button class="close-btn" onclick="tog('aqn40')">close</button></div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Trade settlement</div><div class="metric-val">Automated / API</div></div>
+      <div class="metric"><div class="metric-label">Fiat out</div><div class="metric-val">24–48 hrs</div></div>
+      <div class="metric"><div class="metric-label">Max per currency</div><div class="metric-val">1,000,000</div></div>
+      <div class="metric"><div class="metric-label">BTC spread</div><div class="metric-val">0.4–0.9 bps</div></div>
+    </div>
+    <div class="divider">Currencies & fiat settlement</div>
+    <table class="curr-table">
+      <tr><th>Currency</th><th>Direction</th><th>Rail</th><th>Limit / Notes</th></tr>
+      <tr><td>EUR</td><td>Crypto → Fiat</td><td>SEPA / SWIFT</td><td>Max 1M per withdrawal</td></tr>
+      <tr><td>GBP</td><td>Crypto → Fiat</td><td>SWIFT</td><td>Max 1M per withdrawal</td></tr>
+      <tr><td>USD</td><td>Crypto → Fiat</td><td>SWIFT</td><td>Max 1M per withdrawal</td></tr>
+    </table>
+    <div class="divider">Findings</div>
+    <div class="finding"><div class="fdot dok"></div><span>No docs required — fully automated via API or portal</span></div>
+    <div class="finding"><div class="fdot dwarn"></div><span>AWS server impacted by Abu Dhabi situation — confirm current status</span></div>
+    <div class="finding"><div class="fdot dwarn"></div><span>If API is down, all trades blocked — no manual fallback</span></div>
+    <div class="tags"><span class="tag">No docs required</span><span class="tag">Tested EUR → TKB ✓</span><span class="tag">Tested EUR → BCB ✓</span></div>
+  </div>
+
+  <div class="detail" id="d-lorum">
+    <div class="detail-head"><span class="detail-title">Lorum — 40 Acres</span><button class="close-btn" onclick="tog('lorum')">close</button></div>
+    <div class="alert-box alert-blue"><b>Application in progress.</b> Replacing BCB as primary banking channel for 40 Acres. Currencies and limits TBD pending onboarding completion.</div>
+  </div>
+
+  <div class="detail" id="d-one40">
+    <div class="detail-head"><span class="detail-title">One.io — 40 Acres</span><button class="close-btn" onclick="tog('one40')">close</button></div>
+    <div class="alert-box alert-blue"><b>Application in progress.</b> Replacing BCB as banking channel for 40 Acres alongside Lorum. Currencies and limits TBD pending onboarding completion.</div>
+  </div>
+
+  <div class="detail" id="d-one">
+    <div class="detail-head"><span class="detail-title">One Bank — Perpolis</span><button class="close-btn" onclick="tog('one')">close</button></div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Settlement</div><div class="metric-val">24–48 hrs</div></div>
+      <div class="metric"><div class="metric-label">Invoice threshold</div><div class="metric-val">Above $50k</div></div>
+      <div class="metric"><div class="metric-label">Annual fee</div><div class="metric-val">~£6,600 / entity</div></div>
+      <div class="metric"><div class="metric-label">CSM</div><div class="metric-val">Golnaz Shafie</div></div>
+    </div>
+    <div class="divider">Currencies & settlement</div>
+    <table class="curr-table">
+      <tr><th>Currency</th><th>Direction</th><th>Rail</th><th>Fee</th><th>Notes</th></tr>
+      <tr><td>GBP</td><td>Send & Receive</td><td>FPS / CHAPS / SWIFT</td><td>FPS 50p · CHAPS £20 · SWIFT £12</td><td>Fully live</td></tr>
+      <tr><td>EUR</td><td>Send & Receive</td><td>SEPA / SWIFT</td><td>SEPA £2 · SWIFT £12</td><td>Fully live</td></tr>
+      <tr><td>USD</td><td>Send & Receive</td><td>SWIFT</td><td>SWIFT £12</td><td>Invoicing confirmed — final tax docs pending</td></tr>
+      <tr><td>CAD</td><td>Send</td><td>SWIFT</td><td>SWIFT £12</td><td>Tested 50k CAD → Apaylo ✓</td></tr>
+    </table>
+    <div class="divider">Limitations</div>
+    <div class="finding"><div class="fdot dwarn"></div><span>All transactions require Chris / Nathan approval</span></div>
+    <div class="finding"><div class="fdot dwarn"></div><span>Invoice required for transactions above $50k</span></div>
+    <div class="finding"><div class="fdot dok"></div><span>No hard sending limit with proper documentation</span></div>
+    <div class="finding"><div class="fdot dok"></div><span>Inbound payments free of charge</span></div>
+    <div class="tags"><span class="tag">341k USDC → EUR tested ✓</span><span class="tag">50k CAD → Apaylo ✓</span><span class="tag">FX 1%</span></div>
+  </div>
+
+  <div class="detail" id="d-apaylo">
+    <div class="detail-head"><span class="detail-title">Apaylo — Perpolis</span><button class="close-btn" onclick="tog('apaylo')">close</button></div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">Settlement</div><div class="metric-val">24–48 hrs</div></div>
+      <div class="metric"><div class="metric-label">Scope</div><div class="metric-val">Canada only</div></div>
+      <div class="metric"><div class="metric-label">Docs required</div><div class="metric-val">Invoice</div></div>
+      <div class="metric"><div class="metric-label">Fees</div><div class="metric-val">TBD — Lisa</div></div>
+    </div>
+    <div class="divider">Currencies & settlement</div>
+    <table class="curr-table">
+      <tr><th>Currency</th><th>Direction</th><th>Limitation</th></tr>
+      <tr><td>CAD</td><td>Receive only</td><td>Domestic Canadian banks only — cannot send internationally</td></tr>
+    </table>
+    <div class="finding" style="margin-top:10px"><div class="fdot dbad"></div><span>Cannot send funds to foreign banks or return to international counterparties</span></div>
+    <div class="finding"><div class="fdot dok"></div><span>Received CAD 53,164 from Aquanow — success</span></div>
+  </div>
+
+  <div class="detail" id="d-oneify">
+    <div class="detail-head"><span class="detail-title">Oneify — Perpolis</span><button class="close-btn" onclick="tog('oneify')">close</button></div>
+    <div class="alert-box alert-red"><b>No-go:</b> No access to this bank. Nathan has been chased but no response. Cannot onboard or test until access is granted.</div>
+  </div>
+
+  <div class="detail" id="d-aqnp">
+    <div class="detail-head"><span class="detail-title">Aquanow LP — Perpolis</span><button class="close-btn" onclick="tog('aqnp')">close</button></div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">LP settlement</div><div class="metric-val">1–2 hrs</div></div>
+      <div class="metric"><div class="metric-label">Fiat out</div><div class="metric-val">24–48 hrs (portal)</div></div>
+      <div class="metric"><div class="metric-label">Capacity</div><div class="metric-val">5–10M per trade</div></div>
+      <div class="metric"><div class="metric-label">CSM</div><div class="metric-val">Adrian Seto (Telegram)</div></div>
+    </div>
+    <div class="divider">Currencies & fiat settlement</div>
+    <table class="curr-table">
+      <tr><th>Currency</th><th>Direction</th><th>Min withdrawal</th><th>Convenience charge if below min</th></tr>
+      <tr><td>EUR</td><td>Crypto → Fiat</td><td>25,000</td><td>50 EUR</td></tr>
+      <tr><td>GBP</td><td>Crypto → Fiat</td><td>25,000</td><td>50 GBP</td></tr>
+      <tr><td>USD</td><td>Crypto → Fiat</td><td>25,000</td><td>75 USD</td></tr>
+      <tr><td>CAD</td><td>Crypto → Fiat</td><td>50,000</td><td>150 CAD</td></tr>
+    </table>
+    <div class="divider">Limitations</div>
+    <div class="finding"><div class="fdot dbad"></div><span>EUR/GBP/USD fiat-out blocked until Elton (Admin) whitelists beneficiary</span></div>
+    <div class="finding"><div class="fdot dbad"></div><span>Cannot accept third-party fiat deposits — crypto inbound only</span></div>
+    <div class="finding"><div class="fdot dwarn"></div><span>Settlement approval from AQN team occasionally delayed</span></div>
+    <div class="finding"><div class="fdot dok"></div><span>CAD 53,164 settled to Apaylo ✓ · Crypto-crypto live ✓</span></div>
+  </div>
+
+  <div class="detail" id="d-onelp">
+    <div class="detail-head"><span class="detail-title">One LP — Perpolis</span><button class="close-btn" onclick="tog('onelp')">close</button></div>
+    <div class="metrics">
+      <div class="metric"><div class="metric-label">LP settlement</div><div class="metric-val">Under 1–2 hrs</div></div>
+      <div class="metric"><div class="metric-label">Fiat out</div><div class="metric-val">Via One Bank rail</div></div>
+      <div class="metric"><div class="metric-label">Capacity</div><div class="metric-val">5–10M per trade</div></div>
+      <div class="metric"><div class="metric-label">CSM</div><div class="metric-val">Golnaz Shafie</div></div>
+    </div>
+    <div class="divider">Currencies & fiat settlement</div>
+    <table class="curr-table">
+      <tr><th>Currency</th><th>Direction</th><th>Rail</th><th>Notes</th></tr>
+      <tr><td>GBP</td><td>Crypto → Fiat</td><td>One Bank (FPS / CHAPS)</td><td>Fully live</td></tr>
+      <tr><td>EUR</td><td>Crypto → Fiat</td><td>One Bank (SEPA)</td><td>Fully live</td></tr>
+      <tr><td>USD</td><td>Crypto → Fiat</td><td>One Bank (SWIFT)</td><td>Invoicing docs pending</td></tr>
+    </table>
+    <div class="finding" style="margin-top:10px"><div class="fdot dwarn"></div><span>All transactions require Chris / Nathan approval</span></div>
+    <div class="finding"><div class="fdot dok"></div><span>No hard sending limit with proper documentation · FX 1%</span></div>
+    <div class="tags"><span class="tag">Crypto-crypto live ✓</span><span class="tag">No docs required</span></div>
+  </div>
+
+  <!-- OPEN ITEMS -->
+  <div class="section-label" style="margin-top:1.5rem">Open items & blockers</div>
+  <div class="card">
+    <table class="oi-table">
+      <tr><th>#</th><th>Item</th><th>Owner</th><th>Status</th></tr>
+      <tr><td>1</td><td>TKB — trace EUR 49,000 stuck in transit to BCB</td><td>Max</td><td><span class="oi-status s-stuck">Funds stuck</span></td></tr>
+      <tr><td>2</td><td>TKB GBP IBAN — needed for full go (cost 500 EUR)</td><td>Kevin</td><td><span class="oi-status s-tbd">TBD</span></td></tr>
+      <tr><td>3</td><td>Lorum onboarding — 40 Acres banking replacement</td><td>Max</td><td><span class="oi-status s-prog">In progress</span></td></tr>
+      <tr><td>4</td><td>One.io onboarding — 40 Acres banking replacement</td><td>Max</td><td><span class="oi-status s-prog">In progress</span></td></tr>
+      <tr><td>5</td><td>AQN Perpolis EUR/GBP/USD fiat-out — Elton to whitelist beneficiary</td><td>Ronnie</td><td><span class="oi-status s-tbd">TBD</span></td></tr>
+      <tr><td>6</td><td>One → test bank return tx — pending Finance approval</td><td>Ronnie</td><td><span class="oi-status s-chase">Chased Mar 31</span></td></tr>
+      <tr><td>7</td><td>Apaylo transaction fees — awaiting Lisa</td><td>Lisa</td><td><span class="oi-status s-chase">Messaged</span></td></tr>
+      <tr><td>8</td><td>AQN & BCB transfer fees (40 Acres)</td><td>Kevin</td><td><span class="oi-status s-tbd">TBD</span></td></tr>
+      <tr><td>9</td><td>Oneify — Nathan to confirm access and viability</td><td>Ronnie</td><td><span class="oi-status s-chase">Chasing Nathan</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ COUNTRY PAGE ═══════════════════════════════ -->
+<div class="page" id="page-country">
+
+  <div class="ctrl-bar">
+    <input type="text" id="csearch" placeholder="Search country or ISO..." oninput="renderC()">
+    <button class="filter-btn on" onclick="setRisk('all',this)">All</button>
+    <button class="filter-btn" onclick="setRisk('Low',this)">Low</button>
+    <button class="filter-btn" onclick="setRisk('Medium',this)">Medium</button>
+    <button class="filter-btn" onclick="setRisk('Medium High',this)">Med-High</button>
+    <button class="filter-btn" onclick="setRisk('High',this)">High</button>
+    <button class="filter-btn" onclick="setRisk('Prohibited',this)">Prohibited</button>
+  </div>
+
+  <div class="count-row" id="ccounts"></div>
+
+  <div class="legend-row">
+    <div class="leg"><span class="ob-dot ob-yes"></span>Can onboard</div>
+    <div class="leg"><span class="ob-dot ob-rev"></span>Enhanced review required</div>
+    <div class="leg"><span class="ob-dot ob-no"></span>Restricted — senior compliance sign-off</div>
+    <div class="leg"><span class="ob-dot ob-proh"></span>Prohibited</div>
+  </div>
+
+  <div class="tbl-scroll">
+    <table class="ctry-tbl">
+      <thead><tr><th>Country</th><th>ISO</th><th>Risk</th><th>40 Acres</th><th>Perpolis</th><th>Notes</th></tr></thead>
+      <tbody id="ctbody"></tbody>
+    </table>
+    <div class="no-res" id="cnores" style="display:none">No countries match your filters.</div>
+  </div>
+</div>
+
+<script>
+// ── NAV ──
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});
+  document.querySelectorAll('.nav-tab').forEach(function(b){b.classList.remove('active')});
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── CHANNEL DETAILS ──
+var active = null;
+function tog(id) {
+  var el = document.getElementById('d-'+id);
+  if (active && active !== id) document.getElementById('d-'+active).classList.remove('open');
+  if (active === id) { el.classList.remove('open'); active = null; }
+  else { el.classList.add('open'); el.scrollIntoView({behavior:'smooth',block:'nearest'}); active = id; }
+}
+
+// ── COUNTRY DATA ──
+var cdata = [
+  ["Afghanistan","AF","High"],["Aland Islands","AX","Medium"],["Albania","AL","High"],["Algeria","DZ","High"],["American Samoa","AS","Medium"],["Andorra","AD","Low"],["Angola","AO","High"],["Anguilla","AI","Medium"],["Antigua & Barbuda","AG","Medium"],["Argentina","AR","High"],["Armenia","AM","Medium High"],["Aruba","AW","Medium"],["Australia","AU","Medium"],["Austria","AT","Medium"],["Azerbaijan","AZ","High"],["Bahamas","BS","Medium High"],["Bahrain","BH","Medium High"],["Bangladesh","BD","High"],["Barbados","BB","Medium High"],["Belarus","BY","High"],["Belgium","BE","Medium"],["Belize","BZ","Medium"],["Benin","BJ","High"],["Bermuda","BM","Medium"],["Bhutan","BT","Medium High"],["Bolivia","BO","High"],["Bosnia and Herzegovina","BA","High"],["Botswana","BW","Medium High"],["Bouvet Island","BV","Medium"],["Brazil","BR","High"],["British Indian Ocean Territory","IO","Medium"],["Brunei","BN","Medium"],["Bulgaria","BG","High"],["Burkina Faso","BF","High"],["Burundi","BI","High"],["Cabo Verde","CV","High"],["Cambodia","KH","High"],["Cameroon","CM","High"],["Canada","CA","Medium"],["Caribbean Netherlands","BQ","Medium"],["Cayman Islands","KY","Medium"],["Central African Republic","CF","High"],["Chad","TD","High"],["Chile","CL","Medium"],["China","CN","High"],["Christmas Island","CX","Medium"],["Cocos (Keeling) Is.","CC","Medium"],["Colombia","CO","Medium High"],["Comoros","KM","High"],["Congo Dem. Rep.","CD","High"],["Congo Rep.","CG","High"],["Cook Islands","CK","Medium"],["Costa Rica","CR","Medium High"],["Cote D'Ivoire","CI","High"],["Croatia","HR","High"],["Cuba","CU","Medium High"],["Curacao","CW","Medium"],["Cyprus","CY","Medium High"],["Czech Republic","CZ","Medium High"],["Denmark","DK","Low"],["Djibouti","DJ","High"],["Dominica","DM","Medium High"],["Dominican Republic","DO","High"],["Ecuador","EC","High"],["Egypt","EG","High"],["El Salvador","SV","High"],["Equatorial Guinea","GQ","Prohibited"],["Eritrea","ER","High"],["Estonia","EE","Medium"],["Eswatini","SZ","High"],["Ethiopia","ET","High"],["Falkland Islands","FK","Medium"],["Faroe Islands","FO","Medium"],["Fiji","FJ","Medium High"],["Finland","FI","Low"],["France","FR","Medium"],["French Guiana","GF","Medium"],["French Polynesia","PF","Medium"],["French Southern Territories","TF","Medium"],["Gabon","GA","High"],["Gambia","GM","High"],["Georgia","GE","Medium High"],["Germany","DE","Medium"],["Ghana","GH","Medium High"],["Gibraltar","GI","Medium"],["Greece","GR","Medium High"],["Greenland","GL","Medium"],["Grenada","GD","Medium High"],["Guadeloupe","GP","Medium"],["Guam","GU","Medium"],["Guatemala","GT","High"],["Guernsey","GG","Medium"],["Guinea","GN","High"],["Guinea-Bissau","GW","High"],["Guyana","GY","Medium High"],["Haiti","HT","Prohibited"],["Heard Island","HM","Medium"],["Honduras","HN","High"],["Hong Kong","HK","Medium"],["Hungary","HU","Medium High"],["Iceland","IS","Medium"],["India","IN","High"],["Indonesia","ID","High"],["Iran","IR","Prohibited"],["Iraq","IQ","High"],["Ireland","IE","Medium"],["Isle of Man","IM","Medium"],["Israel","IL","Medium"],["Italy","IT","Medium High"],["Jamaica","JM","Medium High"],["Japan","JP","Medium"],["Jersey","JE","Medium"],["Jordan","JO","Medium High"],["Kazakhstan","KZ","High"],["Kenya","KE","High"],["Kiribati","KI","Medium"],["Korea, North","KP","Prohibited"],["Korea, South","KR","Medium"],["Kosovo","XK","Medium High"],["Kuwait","KW","Medium High"],["Kyrgyzstan","KG","High"],["Laos","LA","High"],["Latvia","LV","Medium"],["Lebanon","LB","High"],["Lesotho","LS","High"],["Liberia","LR","High"],["Libya","LY","Prohibited"],["Liechtenstein","LI","Medium"],["Lithuania","LT","Medium"],["Luxembourg","LU","Medium"],["Macau","MO","High"],["Madagascar","MG","High"],["Malawi","MW","High"],["Malaysia","MY","Medium High"],["Maldives","MV","High"],["Mali","ML","High"],["Malta","MT","Medium High"],["Marshall Islands","MH","Medium"],["Martinique","MQ","Medium"],["Mauritania","MR","High"],["Mauritius","MU","Medium High"],["Mayotte","YT","Medium"],["Mexico","MX","High"],["Micronesia","FM","Medium"],["Moldova","MD","Medium High"],["Monaco","MC","High"],["Mongolia","MN","High"],["Montenegro","ME","Medium High"],["Montserrat","MS","Medium"],["Morocco","MA","High"],["Mozambique","MZ","High"],["Myanmar","MM","Prohibited"],["N. Mariana Islands","MP","Medium High"],["Namibia","NA","High"],["Nauru","NR","High"],["Nepal","NP","Medium"],["Netherlands","NL","Medium"],["New Caledonia","NC","Low"],["New Zealand","NZ","Prohibited"],["Nicaragua","NI","High"],["Niger","NE","High"],["Nigeria","NG","High"],["Niue","NU","Medium"],["Norfolk Island","NF","Medium High"],["North Macedonia","MK","Medium"],["Norway","NO","Low"],["Oman","OM","Medium High"],["Pakistan","PK","High"],["Palau","PW","Medium High"],["Palestine","PS","Medium"],["Panama","PA","High"],["Papua New Guinea","PG","High"],["Paraguay","PY","High"],["Peru","PE","High"],["Philippines","PH","High"],["Pitcairn","PN","Medium"],["Poland","PL","Medium High"],["Portugal","PT","Medium"],["Puerto Rico","PR","Medium"],["Qatar","QA","Medium High"],["Reunion","RE","Medium"],["Romania","RO","Medium High"],["Russian Federation","RU","High"],["Rwanda","RW","Medium High"],["Saint Helena","SH","Medium"],["Saint Kitts & Nevis","KN","High"],["Saint Lucia","LC","Medium High"],["Saint Martin","MF","Medium"],["Samoa","WS","Medium"],["San Marino","SM","Low"],["Sao Tome & Principe","ST","Medium High"],["Saudi Arabia","SA","Medium High"],["Senegal","SN","High"],["Serbia","RS","High"],["Seychelles","SC","Medium High"],["Sierra Leone","SL","High"],["Singapore","SG","Medium"],["Sint Maarten","SX","Medium"],["Slovakia","SK","Medium High"],["Slovenia","SI","Medium High"],["Solomon Islands","SB","High"],["Somalia","SO","Prohibited"],["South Africa","ZA","High"],["South Georgia","GS","Medium"],["South Sudan","SS","Prohibited"],["Spain","ES","Medium"],["Sri Lanka","LK","High"],["St Vincent & Grenadines","VC","Medium"],["St. Pierre & Miquelon","PM","Medium"],["Sudan","SD","High"],["Suriname","SR","High"],["Svalbard","SJ","Medium"],["Swaziland","SWZ","Medium"],["Sweden","SE","Low"],["Switzerland","CH","Medium"],["Syria","SY","Prohibited"],["Taiwan","TW","Medium"],["Tajikistan","TJ","High"],["Tanzania","TZ","High"],["Thailand","TH","High"],["Timor-Leste","TL","Medium High"],["Togo","TG","High"],["Tokelau","TK","Medium"],["Tonga","TO","High"],["Trinidad and Tobago","TT","Medium High"],["Tunisia","TN","Medium High"],["Turkey","TR","High"],["Turkmenistan","TM","Prohibited"],["Turks and Caicos Is.","TC","Medium"],["Tuvalu","TV","Medium"],["Uganda","UG","High"],["Ukraine","UA","High"],["United Arab Emirates","AE","Medium High"],["United Kingdom","GB","Medium"],["US Minor Outlying Islands","UM","Medium"],["Uruguay","UY","Medium"],["USA","US","Medium"],["Uzbekistan","UZ","High"],["Vanuatu","VU","Medium High"],["Vatican City","VA","Medium"],["Venezuela","VE","Prohibited"],["Vietnam","VN","High"],["Virgin Islands (British)","VG","Medium"],["Virgin Islands (U.S.)","VI","Medium"],["Wallis & Futuna Is.","WF","Medium"],["Western Sahara","EH","Medium"],["Yemen","YE","Prohibited"],["Zambia","ZM","High"],["Zimbabwe","ZW","High"]
+];
+
+function getOb(risk) {
+  if (risk==="Prohibited") return {cls:"ob-proh",label:"Prohibited"};
+  if (risk==="Low"||risk==="Medium") return {cls:"ob-yes",label:"Can onboard"};
+  if (risk==="Medium High") return {cls:"ob-rev",label:"Enhanced review"};
+  return {cls:"ob-no",label:"Restricted"};
+}
+function getRiskCls(r) {
+  if(r==="Low") return "rl";
+  if(r==="Medium") return "rm";
+  if(r==="Medium High") return "rmh";
+  if(r==="High") return "rh";
+  return "rp";
+}
+function getNotes(name,risk) {
+  if(risk==="Prohibited") return "Cannot onboard — prohibited jurisdiction";
+  if(name==="United Arab Emirates") return "Home jurisdiction — enhanced review applies";
+  if(name==="Canada") return "CAD via Apaylo (Perpolis, domestic only)";
+  if(name==="United Kingdom") return "GBP via One Bank (Perpolis) & TKB (40 Acres, conditional)";
+  if(name==="USA") return "USD — enhanced docs required";
+  if(risk==="High") return "Senior compliance sign-off required";
+  if(risk==="Medium High") return "Enhanced KYC/AML review required";
+  return "";
+}
+
+var curRisk="all";
+function setRisk(r,btn){
+  curRisk=r;
+  document.querySelectorAll(".filter-btn").forEach(function(b){b.classList.remove("on")});
+  btn.classList.add("on");
+  renderC();
+}
+
+function renderC(){
+  var q=document.getElementById("csearch").value.toLowerCase();
+  var tbody=document.getElementById("ctbody");
+  var rows="";
+  var cn=0,crev=0,cres=0,cproh=0,ctot=0;
+  cdata.forEach(function(c){
+    var name=c[0],iso=c[1],risk=c[2];
+    if(curRisk!=="all"&&risk!==curRisk) return;
+    if(q&&name.toLowerCase().indexOf(q)<0&&iso.toLowerCase().indexOf(q)<0) return;
+    var ob=getOb(risk);
+    var notes=getNotes(name,risk);
+    ctot++;
+    if(risk==="Prohibited") cproh++;
+    else if(risk==="Low"||risk==="Medium") cn++;
+    else if(risk==="Medium High") crev++;
+    else cres++;
+    rows+='<tr><td style="font-weight:500">'+name+'</td><td style="color:var(--text3)">'+iso+'</td><td><span class="risk-b '+getRiskCls(risk)+'">'+risk+'</span></td><td><span class="ob-dot '+ob.cls+'"></span><span style="font-size:11px;color:var(--text2)">'+ob.label+'</span></td><td><span class="ob-dot '+ob.cls+'"></span><span style="font-size:11px;color:var(--text2)">'+ob.label+'</span></td><td style="font-size:11px;color:var(--text3)">'+notes+'</td></tr>';
+  });
+  tbody.innerHTML=rows;
+  document.getElementById("cnores").style.display=rows?"none":"block";
+  document.getElementById("ccounts").innerHTML=
+    '<div class="count-chip"><b>'+ctot+'</b>shown</div>'+
+    '<div class="count-chip"><b>'+cn+'</b>can onboard</div>'+
+    '<div class="count-chip"><b>'+crev+'</b>enhanced review</div>'+
+    '<div class="count-chip"><b>'+cres+'</b>restricted</div>'+
+    '<div class="count-chip"><b>'+cproh+'</b>prohibited</div>';
+}
+renderC();
+</script>
+</body>
+</html>
