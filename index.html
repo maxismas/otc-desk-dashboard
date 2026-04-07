@@ -141,6 +141,7 @@
 <nav>
   <div class="nav-brand">OTC Desk</div>
   <button class="nav-tab active" onclick="showPage('channels',this)">Channels <span class="nav-badge">2 desks</span></button>
+  <button class="nav-tab" onclick="showPage('fees',this)">Fee matrix <span class="nav-badge">partial</span></button>
   <button class="nav-tab" onclick="showPage('country',this)">Country matrix <span class="nav-badge">250+</span></button>
 </nav>
 
@@ -353,6 +354,107 @@
       <tr><td>7</td><td>Apaylo transaction fees — awaiting Lisa</td><td>Lisa</td><td><span class="oi-status s-chase">Messaged</span></td></tr>
       <tr><td>8</td><td>AQN & BCB transfer fees (40 Acres)</td><td>Kevin</td><td><span class="oi-status s-tbd">TBD</span></td></tr>
       <tr><td>9</td><td>Oneify — Nathan to confirm access and viability</td><td>Ronnie</td><td><span class="oi-status s-chase">Chasing Nathan</span></td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ FEES PAGE ═══════════════════════════════ -->
+<div class="page" id="page-fees">
+  <div class="alert-box alert-amber" style="margin-bottom:1rem;border-radius:var(--radius)"><b>Partial data:</b> BCB, TKB, and Apaylo fees are still being confirmed. Items marked TBD will be updated once Kevin and Lisa revert.</div>
+
+  <div class="section-label">40 Acres</div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><div><div class="card-title">BCB</div><div class="card-sub">Bank · SEPA / SWIFT — NO-GO (relationship not being renewed)</div></div><span class="badge nogo">NO-GO</span></div>
+    <table class="oi-table">
+      <tr><th>Rail / Pair</th><th>Direction</th><th>Fee</th><th>Status</th></tr>
+      <tr><td>SEPA — EUR</td><td>Send & Receive</td><td>—</td><td><span class="oi-status s-chase">Kevin to confirm</span></td></tr>
+      <tr><td>SWIFT — USD / GBP / CAD</td><td>Send & Receive</td><td>—</td><td><span class="oi-status s-chase">Kevin to confirm</span></td></tr>
+      <tr><td>SEPA Instant — EUR up to 1M</td><td>Send</td><td>—</td><td><span class="oi-status s-chase">Kevin to confirm</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><div><div class="card-title">The Kingdom Bank</div><div class="card-sub">Bank · SWIFT — Conditional</div></div><span class="badge cond">CONDITIONAL</span></div>
+    <table class="oi-table">
+      <tr><th>Rail / Pair</th><th>Direction</th><th>Fee</th><th>Status</th></tr>
+      <tr><td>SWIFT — GBP</td><td>Send & Receive</td><td>—</td><td><span class="oi-status s-tbd">Not documented</span></td></tr>
+      <tr><td>SWIFT — EUR</td><td>Send & Receive</td><td>—</td><td><span class="oi-status s-tbd">Not documented</span></td></tr>
+      <tr><td>SWIFT — USD</td><td>Receive</td><td>—</td><td><span class="oi-status s-tbd">Not documented</span></td></tr>
+      <tr><td>GBP dedicated IBAN</td><td>One-off cost</td><td>500 EUR</td><td><span class="oi-status s-prog">Pending decision</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:1.5rem">
+    <div class="card-header"><div><div class="card-title">Aquanow LP</div><div class="card-sub">LP · Crypto-Fiat settlement · GO</div></div><span class="badge go">GO</span></div>
+    <table class="oi-table">
+      <tr><th>Rail / Pair</th><th>Direction</th><th>Fee</th><th>Notes</th></tr>
+      <tr><td>Crypto → EUR (SEPA/SWIFT)</td><td>Outbound fiat</td><td>0 (portal shows)</td><td><span class="oi-status s-chase">Kevin to confirm</span></td></tr>
+      <tr><td>Crypto → GBP (SWIFT)</td><td>Outbound fiat</td><td>0 (portal shows)</td><td><span class="oi-status s-chase">Kevin to confirm</span></td></tr>
+      <tr><td>Crypto → USD (SWIFT)</td><td>Outbound fiat</td><td>0 (portal shows)</td><td><span class="oi-status s-chase">Kevin to confirm</span></td></tr>
+      <tr><td>BTC spread</td><td>Trade</td><td>0.4–0.9 bps</td><td>Higher than market average</td></tr>
+      <tr><td>Convenience charge (below min withdrawal)</td><td>Outbound</td><td>50 EUR / 50 GBP / 75 USD</td><td>Only if below 1M threshold</td></tr>
+    </table>
+  </div>
+
+  <div class="section-label">Perpolis</div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><div><div class="card-title">One Bank</div><div class="card-sub">Bank · SEPA / SWIFT / FPS / CHAPS · GO</div></div><span class="badge go">GO</span></div>
+    <table class="oi-table">
+      <tr><th>Rail / Pair</th><th>Direction</th><th>Fee</th><th>Notes</th></tr>
+      <tr><td colspan="4" style="font-size:11px;color:var(--text3);padding:6px 12px;background:var(--bg2)">Account fees</td></tr>
+      <tr><td>Annual account fee</td><td>—</td><td>£6,600 / entity / year</td><td>Paid regardless of volume</td></tr>
+      <tr><td>Application fee</td><td>—</td><td>€1,500 (refundable)</td><td>Was €2,000, negotiated down</td></tr>
+      <tr><td>Set up fee</td><td>—</td><td>€500</td><td>One-off</td></tr>
+      <tr><td>Monthly maintenance</td><td>—</td><td>€250</td><td>Per month</td></tr>
+      <tr><td>Monthly commitment fee</td><td>—</td><td>€0</td><td>Includes SEPA tx costs; must be met</td></tr>
+      <tr><td colspan="4" style="font-size:11px;color:var(--text3);padding:6px 12px;background:var(--bg2)">Transaction fees</td></tr>
+      <tr><td>SEPA pay-in (B2B)</td><td>Inbound</td><td>€20 + 0.25%</td><td>—</td></tr>
+      <tr><td>SEPA pay-out (B2B)</td><td>Outbound</td><td>€20 + 0.15%</td><td>—</td></tr>
+      <tr><td>SWIFT pay-in — USD/GBP/EUR</td><td>Inbound</td><td>€50 + 1.00%</td><td>Non-dedicated account</td></tr>
+      <tr><td>SWIFT pay-out — USD/GBP/EUR</td><td>Outbound</td><td>€50 + 0.75%</td><td>Non-dedicated account</td></tr>
+      <tr><td>FPS (GBP)</td><td>Outbound</td><td>50p</td><td>UK domestic</td></tr>
+      <tr><td>CHAPS (GBP)</td><td>Outbound</td><td>£20</td><td>UK same-day</td></tr>
+      <tr><td>Inbound payments</td><td>Inbound</td><td>Free</td><td>All currencies</td></tr>
+      <tr><td colspan="4" style="font-size:11px;color:var(--text3);padding:6px 12px;background:var(--bg2)">Crypto / FX fees</td></tr>
+      <tr><td>Crypto → Fiat exchange</td><td>Conversion</td><td>0.90%</td><td>—</td></tr>
+      <tr><td>Fiat → Crypto exchange</td><td>Conversion</td><td>1.00%</td><td>—</td></tr>
+      <tr><td>FX rate</td><td>Conversion</td><td>1%</td><td>Applied on all FX conversions</td></tr>
+      <tr><td colspan="4" style="font-size:11px;color:var(--text3);padding:6px 12px;background:var(--bg2)">Additional fees</td></tr>
+      <tr><td>SEPA transfer refund / cancellation</td><td>—</td><td>€250</td><td>Per event</td></tr>
+      <tr><td>Account reactivation</td><td>—</td><td>€1,000</td><td>—</td></tr>
+      <tr><td>Internal transfers (Kingdom Bank users)</td><td>—</td><td>Free</td><td>—</td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><div><div class="card-title">Apaylo</div><div class="card-sub">Bank · CAD domestic only · Conditional</div></div><span class="badge cond">CONDITIONAL</span></div>
+    <table class="oi-table">
+      <tr><th>Rail / Pair</th><th>Direction</th><th>Fee</th><th>Status</th></tr>
+      <tr><td>CAD — domestic Canadian banks</td><td>Receive</td><td>—</td><td><span class="oi-status s-chase">Lisa to confirm</span></td></tr>
+      <tr><td>CAD — international</td><td>Send</td><td>Not available</td><td><span class="oi-status s-stuck">Cannot send internationally</span></td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><div><div class="card-title">Aquanow LP</div><div class="card-sub">LP · Crypto-Fiat settlement · GO</div></div><span class="badge go">GO</span></div>
+    <table class="oi-table">
+      <tr><th>Rail / Pair</th><th>Direction</th><th>Fee</th><th>Notes</th></tr>
+      <tr><td>Crypto → EUR</td><td>Outbound fiat</td><td>High spread (not cheapest)</td><td>Min withdrawal 25,000 EUR</td></tr>
+      <tr><td>Crypto → GBP</td><td>Outbound fiat</td><td>High spread (not cheapest)</td><td>Min withdrawal 25,000 GBP</td></tr>
+      <tr><td>Crypto → USD</td><td>Outbound fiat</td><td>High spread (not cheapest)</td><td>Min withdrawal 25,000 USD</td></tr>
+      <tr><td>Crypto → CAD</td><td>Outbound fiat</td><td>High spread (not cheapest)</td><td>Min withdrawal 50,000 CAD</td></tr>
+      <tr><td>Convenience charge (below min)</td><td>Outbound</td><td>50 EUR / 50 GBP / 75 USD / 150 CAD</td><td>Applied per withdrawal below minimum</td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-header"><div><div class="card-title">One LP</div><div class="card-sub">LP · Crypto-Fiat · GO</div></div><span class="badge go">GO</span></div>
+    <table class="oi-table">
+      <tr><th>Rail / Pair</th><th>Direction</th><th>Fee</th><th>Notes</th></tr>
+      <tr><td>Crypto → GBP (via One Bank)</td><td>Outbound fiat</td><td>FPS 50p / CHAPS £20 / SWIFT £12</td><td>Same as One Bank rail</td></tr>
+      <tr><td>Crypto → EUR (via One Bank)</td><td>Outbound fiat</td><td>SEPA £2 / SWIFT £12</td><td>Same as One Bank rail</td></tr>
+      <tr><td>Crypto → USD (via One Bank)</td><td>Outbound fiat</td><td>SWIFT £12</td><td>Invoicing docs still pending</td></tr>
+      <tr><td>FX rate</td><td>Conversion</td><td>1%</td><td>Applied on all conversions</td></tr>
     </table>
   </div>
 </div>
